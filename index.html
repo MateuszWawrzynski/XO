@@ -1,0 +1,306 @@
+﻿<html>
+	<head>
+		<title>Zagraj w kółko i krzyżyk!</title>
+		<style>
+			body {
+				background-color: #D9F5FF;
+			}
+			#main {
+				background-color: #FFFFFF;
+				float: left;
+				border: 5px solid black;
+				width: 456px;
+				margin-left: 30px;
+				margin-top: 10px;
+				margin-right: 20px;
+			}
+			#debug {
+				background-color: #FFFFFF;
+				float: left;
+				border: 1px solid black;
+				margin-top: 30px;
+				margin-left: 30px;
+				width: 400px;
+				height: 360px;
+				overflow-y: scroll;
+				display: none;
+			}
+			#info {
+				height: 100px;
+				font-size: 20px;
+			}
+			.pole {
+				float: left;
+				width: 150px;
+				height: 150px;
+				border: 1px solid black;
+				text-align: center;
+				line-height: 140px;
+				font-size: 130px;
+				font-weight: bold;
+				cursor: pointer;
+			}
+			.pole:hover {
+				background-color: #FFFAFA;
+			}
+			p {
+				margin-top: 5px;
+				margin-bottom: 5px;
+			}
+		</style>
+		<script>
+			var kolej;
+			if(rand(0, 1) == 0){
+				kolej = 'X';	//	zaczyna gracz (X)
+			}else{
+				setTimeout(zaznaczBot, 1000);
+				kolej = 'O';	//	zaczyna bot (O)
+			}
+			var tura = 1;
+			var pkt = new Array(0, 0);	//	0 = gracz, 1 = bot
+			var ai = new Array();
+			var diff = 2;	//	1 = wyłączone, 2 = włączone
+			setInterval(update, 100);
+			
+			function zaznaczGracz(a){
+				if(kolej == 'X' && document.getElementById(a).innerHTML == ''){
+					document.getElementById(a).innerHTML = 'X';
+					debug('Gracz zaznacza ' + a);
+					if(sprawdz() == 1){
+						alert('Gracz wygrał - punkt dla niego');
+						debug('Gracz wygrał rundę');
+						pkt[0]++;
+						tura++;
+						reset();
+					}
+					setTimeout(zaznaczBot, 1000);
+					kolej = 'O';
+				}
+			}
+			function zaznaczBot(){
+				if(kolej == 'O'){
+					if(diff == 2) AI();
+					if(ai.length > 0 && diff == 2){
+						debug('Bot wykorzystuje AI.');
+						for(var a = 0; a < ai.length; a++){
+							debug('Szukanie odpowiedniego AI: ' + ai[a]);
+							if(document.getElementById(ai[a]).innerHTML == ''){
+								document.getElementById(ai[a]).innerHTML = 'O';
+								debug('AI (wybrane): ' + ai[a]);
+								if(sprawdz() == 2){
+									alert('Bot wygrał - punkt dla niego');
+									debug('Bot wygrał rundę');
+									pkt[1]++;
+									tura++;
+									reset();
+								}
+								kolej = 'X';
+								break;
+							}
+						}
+						ai.length = 0;
+					}else{
+						debug('Bot wykorzystuje losowość.');
+						while(true){
+							var a = rand(1, 3).toString() + rand(1, 3).toString();
+							debug('Losowanie pola i sprawdzanie czy puste: ' + a);
+							if(document.getElementById(a).innerHTML == ''){
+								document.getElementById(a).innerHTML = 'O';
+								debug('Wylosowane pole (puste): ' + a);
+								if(sprawdz() == 2){
+									alert('Bot wygrał - punkt dla niego');
+									debug('Bot wygrał rundę');
+									pkt[1]++;
+									tura++;
+									reset();
+								}
+								kolej = 'X';
+								break;
+							}
+						}
+					}
+				}
+			}
+			function sprawdz(){
+				//	sprawdzanie gracza
+					//	poziomo
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('12').innerHTML == 'X' && document.getElementById('13').innerHTML == 'X') return 1;
+				if(document.getElementById('21').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('23').innerHTML == 'X') return 1;
+				if(document.getElementById('31').innerHTML == 'X' && document.getElementById('32').innerHTML == 'X' && document.getElementById('33').innerHTML == 'X') return 1;
+					//	pionowo
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('21').innerHTML == 'X' && document.getElementById('31').innerHTML == 'X') return 1;
+				if(document.getElementById('12').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('32').innerHTML == 'X') return 1;
+				if(document.getElementById('13').innerHTML == 'X' && document.getElementById('23').innerHTML == 'X' && document.getElementById('33').innerHTML == 'X') return 1;
+					//	skos
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('33').innerHTML == 'X') return 1;
+				if(document.getElementById('31').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('13').innerHTML == 'X') return 1;
+
+				//	sprawdzanie bota
+					//	poziomo
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('12').innerHTML == 'O' && document.getElementById('13').innerHTML == 'O') return 2;
+				if(document.getElementById('21').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('23').innerHTML == 'O') return 2;
+				if(document.getElementById('31').innerHTML == 'O' && document.getElementById('32').innerHTML == 'O' && document.getElementById('33').innerHTML == 'O') return 2;
+					//	pionowo
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('21').innerHTML == 'O' && document.getElementById('31').innerHTML == 'O') return 2;
+				if(document.getElementById('12').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('32').innerHTML == 'O') return 2;
+				if(document.getElementById('13').innerHTML == 'O' && document.getElementById('23').innerHTML == 'O' && document.getElementById('33').innerHTML == 'O') return 2;
+					//	skos
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('33').innerHTML == 'O') return 2;
+				if(document.getElementById('31').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('13').innerHTML == 'O') return 2;
+				
+				//	sprawdzanie remisu
+				if(document.getElementById('11').innerHTML != '' &&
+					document.getElementById('12').innerHTML != '' &&
+					document.getElementById('13').innerHTML != '' &&
+					document.getElementById('21').innerHTML != '' &&
+					document.getElementById('22').innerHTML != '' &&
+					document.getElementById('23').innerHTML != '' &&
+					document.getElementById('31').innerHTML != '' &&
+					document.getElementById('32').innerHTML != '' &&
+					document.getElementById('33').innerHTML != '') return 3;
+				return 0;
+			}
+			function AI(){
+				//	AI atak
+					//	pionowo linia
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('21').innerHTML == 'O' && document.getElementById('31').innerHTML == '') ai.push('31');
+				if(document.getElementById('12').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('32').innerHTML == '') ai.push('32');
+				if(document.getElementById('13').innerHTML == 'O' && document.getElementById('23').innerHTML == 'O' && document.getElementById('33').innerHTML == '') ai.push('33');
+				if(document.getElementById('31').innerHTML == 'O' && document.getElementById('21').innerHTML == 'O' && document.getElementById('11').innerHTML == '') ai.push('11');
+				if(document.getElementById('32').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('12').innerHTML == '') ai.push('12');
+				if(document.getElementById('33').innerHTML == 'O' && document.getElementById('23').innerHTML == 'O' && document.getElementById('13').innerHTML == '') ai.push('13');
+					//	poziomo linia
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('12').innerHTML == 'O' && document.getElementById('13').innerHTML == '') ai.push('13');
+				if(document.getElementById('21').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('23').innerHTML == '') ai.push('23');
+				if(document.getElementById('31').innerHTML == 'O' && document.getElementById('32').innerHTML == 'O' && document.getElementById('33').innerHTML == '') ai.push('33');
+				if(document.getElementById('13').innerHTML == 'O' && document.getElementById('12').innerHTML == 'O' && document.getElementById('11').innerHTML == '') ai.push('11');
+				if(document.getElementById('23').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('21').innerHTML == '') ai.push('21');
+				if(document.getElementById('33').innerHTML == 'O' && document.getElementById('32').innerHTML == 'O' && document.getElementById('31').innerHTML == '') ai.push('31');
+					//	skos linia
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('33').innerHTML == '') ai.push('33');
+				if(document.getElementById('13').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('31').innerHTML == '') ai.push('31');
+				if(document.getElementById('33').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('11').innerHTML == '') ai.push('11');
+				if(document.getElementById('31').innerHTML == 'O' && document.getElementById('22').innerHTML == 'O' && document.getElementById('13').innerHTML == '') ai.push('13');
+					//	skos pomiędzy
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('33').innerHTML == 'O' && document.getElementById('22').innerHTML == '') ai.push('22');
+				if(document.getElementById('13').innerHTML == 'O' && document.getElementById('31').innerHTML == 'O' && document.getElementById('22').innerHTML == '') ai.push('22');
+					//	pionowo pomiędzy
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('31').innerHTML == 'O' && document.getElementById('21').innerHTML == '') ai.push('21');
+				if(document.getElementById('12').innerHTML == 'O' && document.getElementById('32').innerHTML == 'O' && document.getElementById('22').innerHTML == '') ai.push('22');
+				if(document.getElementById('13').innerHTML == 'O' && document.getElementById('33').innerHTML == 'O' && document.getElementById('23').innerHTML == '') ai.push('23');
+					//	poziomo pomiędzy
+				if(document.getElementById('11').innerHTML == 'O' && document.getElementById('13').innerHTML == 'O' && document.getElementById('12').innerHTML == '') ai.push('12');
+				if(document.getElementById('21').innerHTML == 'O' && document.getElementById('23').innerHTML == 'O' && document.getElementById('22').innerHTML == '') ai.push('22');
+				if(document.getElementById('31').innerHTML == 'O' && document.getElementById('33').innerHTML == 'O' && document.getElementById('32').innerHTML == '') ai.push('32');
+				
+				//	AI obrona
+					//	pionowo linia
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('21').innerHTML == 'X' && document.getElementById('31').innerHTML == '') ai.push('31');
+				if(document.getElementById('12').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('32').innerHTML == '') ai.push('32');
+				if(document.getElementById('13').innerHTML == 'X' && document.getElementById('23').innerHTML == 'X' && document.getElementById('33').innerHTML == '') ai.push('33');
+				if(document.getElementById('31').innerHTML == 'X' && document.getElementById('21').innerHTML == 'X' && document.getElementById('11').innerHTML == '') ai.push('11');
+				if(document.getElementById('32').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('12').innerHTML == '') ai.push('12');
+				if(document.getElementById('33').innerHTML == 'X' && document.getElementById('23').innerHTML == 'X' && document.getElementById('13').innerHTML == '') ai.push('13');
+					//	poziomo linia
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('12').innerHTML == 'X' && document.getElementById('13').innerHTML == '') ai.push('13');
+				if(document.getElementById('21').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('23').innerHTML == '') ai.push('23');
+				if(document.getElementById('31').innerHTML == 'X' && document.getElementById('32').innerHTML == 'X' && document.getElementById('33').innerHTML == '') ai.push('33');
+				if(document.getElementById('13').innerHTML == 'X' && document.getElementById('12').innerHTML == 'X' && document.getElementById('11').innerHTML == '') ai.push('11');
+				if(document.getElementById('23').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('21').innerHTML == '') ai.push('21');
+				if(document.getElementById('33').innerHTML == 'X' && document.getElementById('32').innerHTML == 'X' && document.getElementById('31').innerHTML == '') ai.push('31');
+					//	skos linia
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('33').innerHTML == '') ai.push('33');
+				if(document.getElementById('13').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('31').innerHTML == '') ai.push('31');
+				if(document.getElementById('33').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('11').innerHTML == '') ai.push('11');
+				if(document.getElementById('31').innerHTML == 'X' && document.getElementById('22').innerHTML == 'X' && document.getElementById('13').innerHTML == '') ai.push('13');
+					//	skos pomiędzy
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('33').innerHTML == 'X' && document.getElementById('22').innerHTML == '') ai.push('22');
+				if(document.getElementById('13').innerHTML == 'X' && document.getElementById('31').innerHTML == 'X' && document.getElementById('22').innerHTML == '') ai.push('22');
+					//	pionowo pomiędzy
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('31').innerHTML == 'X' && document.getElementById('21').innerHTML == '') ai.push('21');
+				if(document.getElementById('12').innerHTML == 'X' && document.getElementById('32').innerHTML == 'X' && document.getElementById('22').innerHTML == '') ai.push('22');
+				if(document.getElementById('13').innerHTML == 'X' && document.getElementById('33').innerHTML == 'X' && document.getElementById('23').innerHTML == '') ai.push('23');
+					//	poziomo pomiędzy
+				if(document.getElementById('11').innerHTML == 'X' && document.getElementById('13').innerHTML == 'X' && document.getElementById('12').innerHTML == '') ai.push('12');
+				if(document.getElementById('21').innerHTML == 'X' && document.getElementById('23').innerHTML == 'X' && document.getElementById('22').innerHTML == '') ai.push('22');
+				if(document.getElementById('31').innerHTML == 'X' && document.getElementById('33').innerHTML == 'X' && document.getElementById('32').innerHTML == '') ai.push('32');
+			}
+			function reset(){
+				for(var a = 1; a <= 3; a++){
+					for(var b = 1; b <= 3; b++){
+						document.getElementById(a.toString() + b.toString()).innerHTML = '';
+					}
+				}
+				debug('Reset pól<br>');
+			}
+			function update(){
+				document.getElementById('debug').scrollTop = document.getElementById('debug').scrollHeight;
+				if(sprawdz() == 3){
+					alert('Remis - nikt nie otrzymuje punktu.');
+					debug('Remis');
+					reset();
+					tura++;
+				}
+				document.getElementById('info').innerHTML = '<p style="text-align: center;"><b>Tura: ' + tura + '</b></p>';
+				if(kolej == 'X') document.getElementById('info').innerHTML += '<p style="text-align: center;margin-bottom: 20px;color: green;"><b>Kolej:</b> Gracza</p>';
+				else document.getElementById('info').innerHTML += '<p style="text-align: center;margin-bottom: 20px;color: red;"><b>Kolej:</b> Bota</p>';
+				document.getElementById('info').innerHTML += '<p style="text-align: center;"><b>Gracz</b> ' + pkt[0] + ' : ' + pkt[1] + ' <b>Bot</b></p>';
+			}
+			function debug(a){
+				document.getElementById('debug').innerHTML += a + '<br>';
+			}
+			function wyswietlDebug(){
+				if(document.getElementById('debug_onoff').checked == true){
+					document.getElementById('debug').style.display = 'block';
+					for(var a = 1; a <= 3; a++){
+						for(var b = 1; b <= 3; b++){
+							document.getElementById(a.toString() + b.toString()).title = a.toString() + b.toString();
+						}
+					}
+				}else{
+					document.getElementById('debug').style.display = 'none';
+					for(var a = 1; a <= 3; a++){
+						for(var b = 1; b <= 3; b++){
+							document.getElementById(a.toString() + b.toString()).title = '';
+						}
+					}
+				}
+			}
+			
+			function rand(min, max) {
+				return Math.floor(Math.random() * (max - min + 1)) + min;
+			}
+		</script>
+	</head>
+	<body>
+		<input id='debug_onoff' type='checkbox' onchange='wyswietlDebug();'>Włącz/wyłącz okno debug<br>
+		<div id='main'>
+			<div class='pole' id='11' onclick='zaznaczGracz(11);'></div>
+			<div class='pole' id='12' onclick='zaznaczGracz(12);'></div>
+			<div class='pole' id='13' onclick='zaznaczGracz(13);'></div>
+			<div style='clear: both;'></div>
+			
+			<div class='pole' id='21' onclick='zaznaczGracz(21);'></div>
+			<div class='pole' id='22' onclick='zaznaczGracz(22);'></div>
+			<div class='pole' id='23' onclick='zaznaczGracz(23);'></div>
+			<div style='clear: both;'></div>
+			
+			<div class='pole' id='31' onclick='zaznaczGracz(31);'></div>
+			<div class='pole' id='32' onclick='zaznaczGracz(32);'></div>
+			<div class='pole' id='33' onclick='zaznaczGracz(33);'></div>
+			<div style='clear: both;'></div>
+		</div>
+		<p style='font-weight: bold;'>AI bota:</p>
+		<input id='debug_onoff' type='radio' name='diff' onclick='diff = 1;'>Wyłączone<br>
+		<input id='debug_onoff' type='radio' name='diff' onclick='diff = 2;' checked>Włączone<br>
+		<div id='debug'>
+			Debug: <br><br>
+		</div>
+		<div style='clear: both;'></div>
+		<hr>
+		<div id='info'>
+			
+		</div>
+		<hr>
+	</body>
+</html>
